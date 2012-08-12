@@ -1,0 +1,1 @@
+Vertical-Masonary is a dynamic and responsive layout plugin for jQuery. It currently layouts elements vertically in a masonary fashion.
