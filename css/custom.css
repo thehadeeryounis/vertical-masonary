@@ -1,0 +1,65 @@
+.item {
+  display: inline-block;
+  float: none;
+  position: relative;
+  overflow: hidden;
+  font-size: 12px;
+  vertical-align: top;
+  box-shadow: 0 0 5px #000;
+  cursor: pointer;
+}
+
+.no-space {
+  font-size: 0;
+}
+
+.item footer {
+  height: 0;
+  background: #DDD;
+}
+
+.full {
+  background: #eee;
+  box-shadow: 0 0 5px #000;
+}
+
+/**** Transitions ****/
+
+footer,
+.item {
+  -webkit-transition-timing-function: ease-in-out;
+  -moz-transition-timing-function: ease-in-out;
+  -o-transition-timing-function: ease-in-out;
+  transition-timing-function: ease-in-out;
+  -webkit-transition-duration: 0.4s;
+  -moz-transition-duration: 0.4s;
+  -o-transition-duration: 0.4s;
+  transition-duration: 0.4s;
+  -webkit-transition-property: height,width,top;
+  -moz-transition-property: height,width,top;
+  -o-transition-property: height,width,top;
+  transition-property: height,width,top;
+  -ms-transition-duration: 0.4s;
+  -ms-transition-timing-function: ease-in-out;
+  -ms-transition-property: height,width,top;
+}
+
+
+.item:nth-child(even) {
+  padding-top: 400px;
+}
+
+.item:nth-child(3) {
+  padding-top: 500px;
+}
+
+.item:nth-child(4n) {
+  padding-top: 240px;
+}
+
+.item {
+  padding-top: 300px;
+}
+
+
+
