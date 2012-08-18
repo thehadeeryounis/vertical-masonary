@@ -1,7 +1,12 @@
 (function( $ ){
     var methods = {
-        init: function() {
+        init: function(options) {
             var me = $(this);
+            var settings = $.extend( {
+              'spacing' : 20,
+            }, options);
+
+            me.data('options', settings);
             me.vertical_masonary('layout')
             $(window).resize(function() {
                 me.vertical_masonary('destory')
@@ -9,10 +14,12 @@
             });
         },
         layout: function() {
+            var _vertical_spacing = this.data('options')['spacing'];
+            var _horizontal_spacing = this.data('options')['spacing']
             var _matrix = []
             var _temp   = []
             var last    = -1;
-
+            var width = this.width();
             this.parent().addClass("no-space")
 
             this.each(function() {
@@ -27,30 +34,31 @@
             });
             _matrix.push(_temp);
 
-            for( i = 0; i < _matrix[0].length; i++) {
-                _matrix[0][i].css({
-                    "top" : _matrix[0][i].position().top,
-                    "left" : _matrix[0][i].position().left
-                }).data("column",i).data("off",_matrix[0][i].position().top).addClass("column-"+i)
+            this.parent().width(_matrix[0].length * width + ((_matrix[0].length - 1)*_horizontal_spacing));
+            this.parent().height((_vertical_spacing * 2) + this.parent().height());
 
-                if(_matrix[0][i].height() > this.parent().height())
-                    this.parent().height(_matrix[0][i].height())
+            for( i = 0; i < _matrix[0].length; i++) {
+                var top = _matrix[0][i].position().top + _vertical_spacing
+                var left = _matrix[0][i].position().left + _horizontal_spacing * i
+                _matrix[0][i].css({
+                    "top"   : top,
+                    "left"  : left,
+                    "width" : width
+                }).data("column",i).data("off",top).addClass("column-"+i)
             }
 
             for( j = 1; j < _matrix.length; j++) {
-                var delta_height = 0;
                 for( i = 0; i < _matrix[j].length; i++) {
-                    var actual_delta = Number(_matrix[j-1][i].data("off")) + _matrix[j-1][i].outerHeight() + 20
+                    var top = Number(_matrix[j-1][i].data("off")) + _matrix[j-1][i].outerHeight() + _vertical_spacing
+                    var left = _matrix[j][i].position().left + _horizontal_spacing * i
                     _matrix[j][i].css({
-                        "top" : actual_delta + "px",
-                        "left" : _matrix[j][i].position().left
-                    }).data("column",i).data("off",actual_delta).addClass("column-"+i)
-                    if(_matrix[j][i].height() > delta_height)
-                        delta_height = _matrix[j][i].height()
+                        "top"   : top,
+                        "left"  : left,
+                        "width" : width
+                    }).data("column",i).data("off",top).addClass("column-"+i)
                 }
-                
-                this.parent().height(delta_height + this.parent().height());
             }
+
             this.css({
                 "position" : "absolute"
             });
@@ -60,6 +68,7 @@
         destory: function() {
             this.each(function(){
                 $(this).removeAttr("style").removeClass("column-" + $(this).data("column"))
+                $(this).parent().removeAttr("style")
             })
         }
     }

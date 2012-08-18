@@ -1,12 +1,9 @@
 .item {
   display: inline-block;
-  float: none;
   position: relative;
   overflow: hidden;
-  font-size: 12px;
   vertical-align: top;
-  box-shadow: 0 0 5px #000;
-  cursor: pointer;
+  width: 30%;
 }
 
 .no-space {
@@ -15,15 +12,14 @@
 
 .item footer {
   height: 0;
-  background: #DDD;
 }
 
-.full {
-  background: #eee;
-  box-shadow: 0 0 5px #000;
+.row {
+  position: relative;
+  margin: 0 auto;
+  width: 90%;
+  min-width: 700px;
 }
-
-/**** Transitions ****/
 
 footer,
 .item {
@@ -44,22 +40,53 @@ footer,
   -ms-transition-property: height,width,top;
 }
 
+/**** You can remove this ****/
+
+html,body {
+  padding: 0;
+  margin: 0;
+}
+
+.item footer {
+  background: #DDD;
+}
 
 .item:nth-child(even) {
-  padding-top: 400px;
+  line-height: 400px;
 }
 
 .item:nth-child(3) {
-  padding-top: 500px;
+  line-height: 500px;
 }
 
 .item:nth-child(4n) {
-  padding-top: 240px;
+  line-height: 240px;
 }
 
 .item {
-  padding-top: 300px;
+  float: none;
+  font-size: 120px;
+  box-shadow: 0 0 5px black;
+  cursor: pointer;
+  line-height: 300px;
+  font-family: "Century Gothic";
+  text-align: center;
 }
 
+.item footer .inner {
+  font-size: 18px;
+  line-height: 20px;
+  padding: 10px;
+  text-align: justify;
+}
 
-
+@font-face {
+  font-weight: normal;
+  font-style: normal;
+  font-family: 'Century Gothic';
+  src: url('fonts/century_gothic/font.eot');
+  src: url('fonts/century_gothic/font.eot?#iefix') format('embedded-opentype'),
+       url('fonts/century_gothic/font.woff') format('woff'),
+       url('fonts/century_gothic/font.ttf') format('truetype'),
+       url('fonts/century_gothic/font.svg#century_gothic') format('svg');
+}
