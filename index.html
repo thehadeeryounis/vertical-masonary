@@ -158,28 +158,10 @@
 <script>
 $(function(){
 	$('.item').vertical_masonary({
-		spacing: 20
+		spacing: 20,
+		selector: ".item",
+		columns: 3
 	});
-
-  	$('.row').on('click','.item',function(){
-  		var footer = $('footer',$(this));
-  		var height = $('.inner',footer).outerHeight();
-
-  		$(this).nextAll('.column-'+$(this).data("column")).each(function(){
-  			var to = Number($(this).data("off"))
-  			if(footer.height() == 0)
-  				to += height
-  			else
-  				to -= height
-  			$(this).css('top',to +"px")
-  			$(this).data('off', to);
-  		});
-
-  		if(footer.height() > 0)
-  			footer.height(0)
-  		else
-  			footer.height(height);
-  	});
 });
 </script>
 </body>

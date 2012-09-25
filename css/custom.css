@@ -3,7 +3,7 @@
   position: relative;
   overflow: hidden;
   vertical-align: top;
-  width: 30%;
+  width: 300px;
 }
 
 .no-space {
@@ -17,8 +17,8 @@
 .row {
   position: relative;
   margin: 0 auto;
-  width: 90%;
   min-width: 700px;
+  width: 940px;
 }
 
 footer,

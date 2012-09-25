@@ -1,73 +1,79 @@
 (function( $ ){
+    var index = -1;
+    var height = 0;
+    var max_height = 0;
     var methods = {
         init: function(options) {
             var me = $(this);
             var settings = $.extend( {
               'spacing' : 20,
+              'columns' : 3,
+              'selector' : '.grid_4'
             }, options);
 
             me.data('options', settings);
-            me.vertical_masonary('layout')
-            $(window).resize(function() {
-                me.vertical_masonary('destory')
-                me.vertical_masonary('layout')
-            });
+            me.vertical_masonary('append')
         },
-        layout: function() {
-            var _vertical_spacing = this.data('options')['spacing'];
-            var _horizontal_spacing = this.data('options')['spacing']
-            var _matrix = []
-            var _temp   = []
-            var last    = -1;
-            var width = this.width();
-            this.parent().addClass("no-space")
-
-            this.each(function() {
-                var delta = $(this).position().top
-                if (delta == last || last == -1)
-                    _temp.push($(this))
-                else {
-                    _matrix.push(_temp);
-                    _temp = [$(this)];
-                }
-                last = delta
-            });
-            _matrix.push(_temp);
-
-            this.parent().width(_matrix[0].length * width + ((_matrix[0].length - 1)*_horizontal_spacing));
-            this.parent().height((_vertical_spacing * 2) + this.parent().height());
-
-            for( i = 0; i < _matrix[0].length; i++) {
-                var top = _matrix[0][i].position().top + _vertical_spacing
-                var left = _matrix[0][i].position().left + _horizontal_spacing * i
-                _matrix[0][i].css({
-                    "top"   : top,
-                    "left"  : left,
-                    "width" : width
-                }).data("column",i).data("off",top).addClass("column-"+i)
-            }
-
-            for( j = 1; j < _matrix.length; j++) {
-                for( i = 0; i < _matrix[j].length; i++) {
-                    var top = Number(_matrix[j-1][i].data("off")) + _matrix[j-1][i].outerHeight() + _vertical_spacing
-                    var left = _matrix[j][i].position().left + _horizontal_spacing * i
-                    _matrix[j][i].css({
-                        "top"   : top,
-                        "left"  : left,
-                        "width" : width
-                    }).data("column",i).data("off",top).addClass("column-"+i)
-                }
-            }
-
-            this.css({
-                "position" : "absolute"
-            });
-
-            this.parent().removeClass("no-space")
+        reposition: function(options) {
+            this.vertical_masonary('destroy')
+            this.vertical_masonary('init', options)
         },
-        destory: function() {
+        append: function() {
+            var _vertical_spacing   = this.data('options')['spacing'];
+            var selector   = this.data('options')['selector']
+            var columns    = this.data('options')['columns']
+            var parent     = $(this).parent()
+            var me = this 
+            index  = (columns == 1)? 0 : -1
+            height = max_height = 0
+
+            $('[data-column]').hide()         
+            setTimeout(function(){
+                me.vertical_masonary('appendOne',selector,parent,columns,_vertical_spacing);
+            },1)
+        },
+        appendOne: function(selector,parent,columns,_vertical_spacing) {
+            var last = $(selector + '.finished:last')
+            var last_column = (last.length == 1)? Number(last.data('column')) : columns - 1
+            var next_column = (last_column == (columns - 1))? 0 : (last_column + 1);
+            var me = $(selector + ':not(.finished):not([data-column]):first')
+            var override = $('[data-column="' + (next_column - columns) + '"][data-index="' + index + '"]')
+
+            if(override.length == 1) {
+                me.before(override)
+                me = override
+                me.show();
+            }
+            
+            if(me.length == 0) {
+                parent.height(height + 50)
+                return;
+            }
+            
+            var above = $(selector + '.column-' + next_column + ':last')
+            var prev = $(selector + '.column-' + last_column + ':last')
+            var top = (above.length == 1)? Number(above.data("off")) + above.outerHeight() + _vertical_spacing : me.position().top
+            var left = (next_column == 0)? 0 : prev.position().left + prev.outerWidth() + _vertical_spacing
+
+            me.css({
+                "top"   : top,
+                "left"  : left,
+                "position": 'absolute',
+                "margin" : "0px !important"
+            }).data("column", next_column).data("off",top).addClass("finished column-" + next_column)
+
+            max_height = (me.outerHeight() > max_height)? me.outerHeight() : max_height;
+
+            if(next_column == 0 ) {
+                height += (max_height + _vertical_spacing)
+                index++;
+            }
+            
+            this.vertical_masonary('appendOne',selector,parent,columns,_vertical_spacing);
+        },
+        destroy: function() {
             this.each(function(){
-                $(this).removeAttr("style").removeClass("column-" + $(this).data("column"))
+                $(this).removeAttr("style").removeClass("finished column-" + $(this).data("column"))
                 $(this).parent().removeAttr("style")
             })
         }
@@ -79,7 +85,7 @@
     else if ( typeof method === 'object' || ! method || method == undefined)
       return methods.init.apply( this, arguments );
     else
-      $.error( 'Method ' +  method + ' does not exist on jQuery.tooltip' );    
+      $.error( 'Method ' +  method + ' does not exist on jQuery.vertical_masonary' );    
   };
 
 })( jQuery );
