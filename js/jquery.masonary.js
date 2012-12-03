@@ -1,89 +1,124 @@
+var heights, counts, pins, all_pins, stickies , skip;
+var styleQueue = [];
+
 (function( $ ){
-    var heights = []
     var settings = {
       'spacing' : 20,
       'columns' : 3,
-      'selector' : '.grid_4',
+      'selector' : '.box',
       'width': 0,
-      'parent': null,
+      'parent': 'body',
       'gutter': 113,
-      'skip' : true
-    };
+      'binded' : false
+    }   
     var methods = {
         init: function(options) {
-            settings        = $.extend(settings, options);
-            settings.width  = $(settings.selector).first().width();
-            settings.parent = $(settings.selector).parent();
-            while (heights.length < settings.columns)
-                heights.push(0)
-            methods.layout()
+            skip             = false;
+            counts           = []
+            heights          = []
+            settings         = $.extend(settings, options);
+            settings.parent  = this
+            all_pins         = $(settings.selector + ':not(.stuck)', settings.parent)
+            settings.width   = (settings.width)? settings.width : all_pins.first().width()
+            settings.columns = i = methods.columns()
+
+            if(!all_pins.length) return;
+
+            while (i--) {
+                heights[i] = 0;
+                counts[i] = 0;
+            }
+
+            if(!settings.binded) {
+                $(window).resize(methods.reposition)
+                settings.binded = true;
+            }
+
+            methods.placement()
         },
-        reposition: function(options) {
-            heights = []
-            this.vertical_masonary('destroy')
-            this.vertical_masonary('init', options)
+        tearDown: function(){
+            settings.parent.height(methods.height() + settings.gutter)
+            all_pins.addClass("finished")
+            for (i = 0, len = styleQueue.length; i < len; i++) {
+                pin = styleQueue[i];
+                pin.element['css']( pin.style );
+            }
+            return false;
+        },
+        columns: function() {
+            return parseInt(settings.parent.width()/settings.width)
+        },
+        reposition: function(force) {
+            force = (force == true)? true : false
+            if(skip || (!force && methods.columns() == settings.columns && settings.width == parseInt(all_pins.first().width())))       
+               return
+            else if(methods.columns() == 1) 
+               methods.destroy()
+            else {
+                skip = true;
+                setTimeout(function(){
+                    methods.destroy();
+                    methods.init();
+                    skip = false;
+                },200);
+            }
         },
         layout: function() {
-            $(settings.selector + ':not(.finished)').css('opacity',0)
-            settings.skip = ($('[data-column][data-index]:not(.finished)').length == 0)? true : false
-            setTimeout(function(){
-                methods.pin()
-            },0)
+            all_pins = $(settings.selector + ":not(.stuck):not(.finished)", settings.parent)
+            methods.placement()
+        },
+        sort: function() {
+            i = stickies.length;
+            while(i--) {
+                obj = stickies.splice(0,1)
+                sticky     = $(obj);
+                var column = Number(sticky.data('column'));
+                var row    = Number(sticky.data('index'));
+                var index  = (row * settings.columns) + column;
+                all_pins.splice(index, 0, obj);
+                stickies.data('index', row + 1);
+            }          
+        },
+        placement: function() {
+
+            styleQueue = []
+            stickies   = $('.stuck', settings.parent)
+            
+            if(!all_pins.length && !stickies.length) return;
+            
+            methods.sort();
+
+            for(i = 0; i < all_pins.length; i++)
+                methods.pin($(all_pins[i]))
+
+            methods.tearDown();
         },
         shortest: function() {
             return heights.indexOf(Math.min.apply(null, heights))
         },
-        tallest: function() {
+        height: function() {
             return Math.max.apply(null, heights)
         },
-        nextPin: function(c,r) {
-            var pin  = $(settings.selector + ':not(.finished):not([data-column]):first')
+        pin: function(curr_pin) {
+            var c      = methods.shortest();
+            var top    = heights[c] + settings.spacing
+            heights[c] = top + curr_pin.outerHeight(true)
+            counts[c]  = counts[c] + 1
 
-            if(settings.skip) return pin;
-
-            var stuck    = $('[data-column="' + c + '"][data-index="' + r + '"]:not(.finished):first')
-            var stuckies = $('[data-column][data-index="' + r + '"]:not(.finished):first') 
-            var stickies = $('[data-column][data-index]:not(.finished):first') 
-
-            if(stickies.length == 0) settings.skip = true;
-
-            if(stuck.length > 0) return stuck
-            else if((c == settings.columns - 1) && stuck.length == 0 && stuckies.length > 0)
-                return stuckies
-            else if(stickies.length > 0 && pin.length == 0 && stuck.length == 0)
-                return stickies 
-            else return pin
-        },
-        pin: function() {
-            var c    = methods.shortest();
-            var r    = $('.column-' + c).length
-            var pin  = methods.nextPin(c,r)
-            var prev = $(settings.selector+'.finished:last');
-
-            if(pin.length == 0) { 
-                settings.parent.height(methods.tallest() + settings.gutter)
-                $(settings.selector).css('opacity',1)
-                return;
-            } 
-
-            if(prev.length == 1 && prev.next() != pin) prev.after(pin);
-
-            var above  = $(settings.selector + '.column-' + c + '.finished:last')
-            var top    = (above.length == 1)? Number(above.data("off")) + above.outerHeight() + settings.spacing : settings.spacing
-            heights[c] = top + pin.height();
-
-            pin.css({
-                "top"   : top,
-                "left"  : (c == 0)? 0 : (settings.width * c) + (c * settings.spacing),
-                "position": 'absolute'
-            }).data("column", c).data("off",top).addClass("finished column-" + c)
-
-            methods.pin()
+            styleQueue.push({
+                element: curr_pin,
+                style: {
+                    "top"   : top,
+                    "left"  : (settings.width * c) + (c * settings.spacing),
+                    "position": 'absolute'
+                }
+            })
         },
         destroy: function() {
-            this.each(function(){
-                $(this).removeAttr("style").removeClass("finished column-" + $(this).data("column"))
-            });
+            all_pins.removeClass("finished").removeAttr("style")
+        },
+        inited: function(selector) {
+            return all_pins.length
         }
     }
 
@@ -97,4 +132,3 @@
   };
 
 })( jQuery );
-
