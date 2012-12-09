@@ -63,6 +63,7 @@ html,body {
   line-height: 240px;
 }
 
+
 .item {
   float: none;
   font-size: 120px;
@@ -71,6 +72,7 @@ html,body {
   line-height: 300px;
   font-family: "Century Gothic";
   text-align: center;
+  position: absolute;
 }
 
 .item footer .inner {

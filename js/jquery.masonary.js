@@ -1,6 +1,6 @@
-var heights, counts, pins, all_pins, stickies , skip;
+var heights, counts, skip;
 var styleQueue = [];
-
+var to_stick = [];
 (function( $ ){
     var settings = {
       'spacing' : 20,
@@ -16,13 +16,15 @@ var styleQueue = [];
             skip             = false;
             counts           = []
             heights          = []
+            styleQueue       = [];
             settings         = $.extend(settings, options);
             settings.parent  = this
-            all_pins         = $(settings.selector + ':not(.stuck)', settings.parent)
-            settings.width   = (settings.width)? settings.width : all_pins.first().width()
+            all_pins         = $(settings.selector, settings.parent)
+            stickies         = $('.stuck', settings.parent)
+            settings.width   = (settings.width)? settings.width : (all_pins.length)? all_pins.first().width() : stickies.first().width()
             settings.columns = i = methods.columns()
 
-            if(!all_pins.length) return;
+            if(!all_pins.length && !stickies) return;
 
             while (i--) {
                 heights[i] = 0;
@@ -34,11 +36,10 @@ var styleQueue = [];
                 settings.binded = true;
             }
 
-            methods.placement()
+            methods.layout(all_pins, stickies)
         },
         tearDown: function(){
             settings.parent.height(methods.height() + settings.gutter)
-            all_pins.addClass("finished")
             for (i = 0, len = styleQueue.length; i < len; i++) {
                 pin = styleQueue[i];
                 pin.element['css']( pin.style );
@@ -63,33 +64,49 @@ var styleQueue = [];
                 },200);
             }
         },
-        layout: function() {
-            all_pins = $(settings.selector + ":not(.stuck):not(.finished)", settings.parent)
-            methods.placement()
-        },
-        sort: function() {
-            i = stickies.length;
-            while(i--) {
-                obj = stickies.splice(0,1)
+        sort: function(stickies) {
+            for(i = 0; i < stickies.length; i++) {
+                obj = stickies[i]
                 sticky     = $(obj);
                 var column = Number(sticky.data('column'));
                 var row    = Number(sticky.data('index'));
                 var index  = (row * settings.columns) + column;
-                all_pins.splice(index, 0, obj);
-                stickies.data('index', row + 1);
+                to_stick[i] = index;
+                stickies.filter('[data-column="' + column + '"][data-index="' + row + '"]').attr('data-index', row + 1);
             }          
         },
-        placement: function() {
+        layout: function(pins, stickies) {
 
+            to_stick = []
             styleQueue = []
-            stickies   = $('.stuck', settings.parent)
-            
-            if(!all_pins.length && !stickies.length) return;
-            
-            methods.sort();
 
-            for(i = 0; i < all_pins.length; i++)
-                methods.pin($(all_pins[i]))
+            if(!pins.length && !stickies.length) return;
+            
+
+            methods.sort(stickies);
+            
+            length = pins.length
+            
+            j = 0;
+            
+            for(i = 0; i < length + 1; i++) {
+                var c      = methods.shortest();
+                var index  = (counts[c] * settings.columns) + c;
+                var pin;
+
+                if(index == to_stick[j]) {
+                    pin = $(stickies[j])
+                    i--;
+                    j++;
+                }
+                else 
+                    pin = $(pins[i])
+
+                if(pin.length) methods.pin(pin, c)
+            }
+
+            for(j; j < to_stick.length; j ++)
+                methods.pin($(stickies[j]), methods.shortest())
 
             methods.tearDown();
         },
@@ -99,23 +116,20 @@ var styleQueue = [];
         height: function() {
             return Math.max.apply(null, heights)
         },
-        pin: function(curr_pin) {
-            var c      = methods.shortest();
+        pin: function(curr_pin, c) {
             var top    = heights[c] + settings.spacing
             heights[c] = top + curr_pin.outerHeight(true)
             counts[c]  = counts[c] + 1
-
             styleQueue.push({
                 element: curr_pin,
                 style: {
                     "top"   : top,
-                    "left"  : (settings.width * c) + (c * settings.spacing),
-                    "position": 'absolute'
+                    "left"  : (settings.width * c) + (c * settings.spacing)
                 }
             })
         },
         destroy: function() {
-            all_pins.removeClass("finished").removeAttr("style")
+            all_pins.removeAttr("style")
         },
         inited: function(selector) {
             return all_pins.length

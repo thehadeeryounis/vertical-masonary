@@ -11,19 +11,33 @@
 <script src="js/jquery.js"></script>
 <script src="js/jquery.masonary.js"></script>
 <script>
-// $('#stream').append('<div class="item stuck" data-column="2" data-index="0">' + 1 + '</div>')
-// $('#stream').append('<div class="item stuck" data-column="2" data-index="0">' + 2 + '</div>')
-// $('#stream').append('<div class="item stuck" data-column="2" data-index="0">' + 3 + '</div>')
-for(i = 4; i < 97; i++)
+$('#stream').append('<div class="item stuck" data-column="1" data-index="1">#</div>')
+$('#stream').append('<div class="item stuck" data-column="1" data-index="1">#</div>')
+$('#stream').append('<div class="item stuck" data-column="1" data-index="1">#</div>')
+for(i = 0; i < 997; i++)
 	$('#stream').append('<div class="item">' + i + '</div>')
+
 $(function(){
 	var ssss = new Date()
 	$("#stream").vertical_masonary({
-		selector: ".item"
+		selector: ".item:not(.stuck)"
 	});
 	console.log("total time " + ( (new Date()) - ssss ) )
-
 });
+
+function lol() {
+
+
+	var ssss = new Date()
+	$('#stream').append('<div class="item new">&</div>')
+	$('#stream').append('<div class="item new">&</div>')
+	$('#stream').append('<div class="item new">&</div>')
+	var x = $('.new:not(.stuck)')
+	var y = $('.new.stuck')
+	$('#stream').vertical_masonary('layout',x,y)
+	console.log("total time " + ( (new Date()) - ssss ) )
+}
+
 </script>
 </body>
 </html>
