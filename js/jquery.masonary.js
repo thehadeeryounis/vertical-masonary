@@ -1,49 +1,62 @@
-var heights, counts, skip;
-var styleQueue = [];
-var to_stick = [];
+var heights, counts, skip, styleQueue, all_pins;
+
 (function( $ ){
-    var settings = {
-      'spacing' : 20,
-      'columns' : 3,
-      'selector' : '.box',
-      'width': 0,
-      'parent': 'body',
-      'gutter': 113,
-      'binded' : false
-    }   
+    var settings = {};
+    var binded = false
+    var original_overrides = undefined
     var methods = {
+        original_settings : function() {
+            return {
+              'spacing' : 10,
+              'columns' : 3,
+              'selector' : '.masonary-item',
+              'width': 0,
+              'parent': $('.masonary-holder'),
+              'gutter': 0
+            } 
+        },
+        original_overrides : function(options) {
+            if(original_overrides == undefined && options == undefined) return methods.original_settings()
+            else if(options != undefined) original_overrides = options
+
+            return original_overrides
+        },
         init: function(options) {
             skip             = false;
             counts           = []
             heights          = []
-            styleQueue       = [];
-            settings         = $.extend(settings, options);
-            settings.parent  = this
+            styleQueue       = []
+            settings         = $.extend(methods.original_settings(), methods.original_overrides(options));
+            settings.parent  = $(settings.parent)
             all_pins         = $(settings.selector, settings.parent)
-            stickies         = $('.stuck', settings.parent)
-            settings.width   = (settings.width)? settings.width : (all_pins.length)? all_pins.first().width() : stickies.first().width()
-            settings.columns = i = methods.columns()
 
-            if(!all_pins.length && !stickies) return;
+            if(!all_pins.length) return;
+
+            settings.width   = (settings.width)? settings.width : all_pins.first().width()
+            settings.columns = i = methods.columns()
 
             while (i--) {
                 heights[i] = 0;
                 counts[i] = 0;
             }
 
-            if(!settings.binded) {
+            if(!binded) {
                 $(window).resize(methods.reposition)
-                settings.binded = true;
+                binded = true;
             }
 
-            methods.layout(all_pins, stickies)
+            methods.layout(all_pins, [])
+
         },
         tearDown: function(){
             settings.parent.height(methods.height() + settings.gutter)
+
             for (i = 0, len = styleQueue.length; i < len; i++) {
                 pin = styleQueue[i];
                 pin.element['css']( pin.style );
             }
+            e = new Date()
+            time.text('Masonarized ' + $('.item').length + ' elements in ' + (e - s) + ' ms')
             return false;
         },
         columns: function() {
@@ -61,52 +74,18 @@ var to_stick = [];
                     methods.destroy();
                     methods.init();
                     skip = false;
-                },200);
+                },10);
             }
-        },
-        sort: function(stickies) {
-            for(i = 0; i < stickies.length; i++) {
-                obj = stickies[i]
-                sticky     = $(obj);
-                var column = Number(sticky.data('column'));
-                var row    = Number(sticky.data('index'));
-                var index  = (row * settings.columns) + column;
-                to_stick[i] = index;
-                stickies.filter('[data-column="' + column + '"][data-index="' + row + '"]').attr('data-index', row + 1);
-            }          
         },
         layout: function(pins, stickies) {
-
-            to_stick = []
+            if(!methods.inited()) return methods.init();
+            if(!pins.length) return;
             styleQueue = []
 
-            if(!pins.length && !stickies.length) return;
+            length = pins.length + 1
             
-
-            methods.sort(stickies);
-            
-            length = pins.length
-            
-            j = 0;
-            
-            for(i = 0; i < length + 1; i++) {
-                var c      = methods.shortest();
-                var index  = (counts[c] * settings.columns) + c;
-                var pin;
-
-                if(index == to_stick[j]) {
-                    pin = $(stickies[j])
-                    i--;
-                    j++;
-                }
-                else 
-                    pin = $(pins[i])
-
-                if(pin.length) methods.pin(pin, c)
-            }
-
-            for(j; j < to_stick.length; j ++)
-                methods.pin($(stickies[j]), methods.shortest())
+            for(i = 0; i < length; i++)
+                methods.pin($(pins[i]), methods.shortest())
 
             methods.tearDown();
         },
@@ -117,9 +96,10 @@ var to_stick = [];
             return Math.max.apply(null, heights)
         },
         pin: function(curr_pin, c) {
-            var top    = heights[c] + settings.spacing
-            heights[c] = top + curr_pin.outerHeight(true)
+            var top    = (heights[c])? heights[c] + settings.spacing : 0
+            heights[c] = top + curr_pin.outerHeight()
             counts[c]  = counts[c] + 1
+
             styleQueue.push({
                 element: curr_pin,
                 style: {
@@ -129,14 +109,22 @@ var to_stick = [];
             })
         },
         destroy: function() {
-            all_pins.removeAttr("style")
+            settings.parent.removeAttr('style').height(0)
+            $(settings.selector, settings.parent).removeAttr('style')
+            skip             = false;
+            counts           = []
+            heights          = []
+            styleQueue       = []
+            binded           = false
+            settings         = methods.original_settings();
         },
         inited: function(selector) {
-            return all_pins.length
+            return binded
         }
     }
 
-  $.fn.vertical_masonary  = function( method ) {
+  $.vertical_masonary  = function( method ) {
+    s = new Date();
     if ( methods[method] )
       return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
     else if ( typeof method === 'object' || ! method || method == undefined)

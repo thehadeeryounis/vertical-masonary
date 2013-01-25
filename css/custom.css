@@ -3,7 +3,8 @@
   position: relative;
   overflow: hidden;
   vertical-align: top;
-  width: 300px;
+  background: #ddd;
+  width: 10%;
 }
 
 .no-space {
@@ -16,70 +17,49 @@
 
 .row {
   position: relative;
-  margin: 0 auto;
-  min-width: 700px;
-  width: 940px;
 }
 
-footer,
-.item {
-  -webkit-transition-timing-function: ease-in-out;
-  -moz-transition-timing-function: ease-in-out;
-  -o-transition-timing-function: ease-in-out;
-  transition-timing-function: ease-in-out;
-  -webkit-transition-duration: 0.4s;
-  -moz-transition-duration: 0.4s;
-  -o-transition-duration: 0.4s;
-  transition-duration: 0.4s;
-  -webkit-transition-property: height,width,top;
-  -moz-transition-property: height,width,top;
-  -o-transition-property: height,width,top;
-  transition-property: height,width,top;
-  -ms-transition-duration: 0.4s;
-  -ms-transition-timing-function: ease-in-out;
-  -ms-transition-property: height,width,top;
+.masonary-item {
+  position: absolute;
 }
 
 /**** You can remove this ****/
 
+.time {
+  background: #ffaaaa;
+  z-index: 1;
+  position: fixed;
+  padding: 20px;
+  background-color: rgba(255, 0, 51, 0.7);
+  font-size: 30px;
+  top: 0;
+  left: 0;
+}
+
 html,body {
   padding: 0;
   margin: 0;
-}
-
-.item footer {
-  background: #DDD;
+  font-family: "Century Gothic";
 }
 
 .item:nth-child(even) {
-  line-height: 400px;
+  line-height: 100px;
 }
 
-.item:nth-child(3) {
-  line-height: 500px;
+.item:nth-child(5n) {
+  line-height: 170px;
 }
 
-.item:nth-child(4n) {
-  line-height: 240px;
+.item:nth-child(3n) {
+  line-height: 50px;
 }
-
 
 .item {
   float: none;
-  font-size: 120px;
-  box-shadow: 0 0 5px black;
+  font-size: 50px;
   cursor: pointer;
   line-height: 300px;
-  font-family: "Century Gothic";
   text-align: center;
-  position: absolute;
-}
-
-.item footer .inner {
-  font-size: 18px;
-  line-height: 20px;
-  padding: 10px;
-  text-align: justify;
 }
 
 @font-face {
